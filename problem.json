@@ -1,0 +1,863 @@
+{
+    "name": "Srasearch-synthetic-instance",
+    "description": "Instance generated with WfCommons - https://wfcommons.org",
+    "createdAt": "2021-12-18T19:01:11.523844",
+    "schemaVersion": "1.2",
+    "author": {
+        "name": "root",
+        "email": "support@wfcommons.org"
+    },
+    "wms": {
+        "name": "WfCommons",
+        "version": "0.7",
+        "url": "https://docs.wfcommons.org/en/v0.7/"
+    },
+    "workflow": {
+        "executedAt": "20211218T190111+0000",
+        "makespan": 0,
+        "jobs": [
+            {
+                "name": "bowtie2-build_00000001",
+                "type": "compute",
+                "runtime": 30.833,
+                "command": {
+                    "program": "bowtie2-build"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000003",
+                    "bowtie2_00000005",
+                    "bowtie2_00000007",
+                    "bowtie2_00000009",
+                    "bowtie2_00000011",
+                    "bowtie2_00000013",
+                    "bowtie2_00000015",
+                    "bowtie2_00000017",
+                    "bowtie2_00000019",
+                    "bowtie2_00000021"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "b1916366-a3cd-4f79-8ad3-c9dd407e6df3.fna",
+                        "size": 98721
+                    }
+                ],
+                "cores": 1,
+                "id": "00000001",
+                "category": "bowtie2-build"
+            },
+            {
+                "name": "fasterq-dump_00000002",
+                "type": "compute",
+                "runtime": 2151.955,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000003"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "74fcb890-d13f-4892-950f-28dcdf5ad5a4.fastq",
+                        "size": 1038716396
+                    }
+                ],
+                "cores": 1,
+                "id": "00000002",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000003",
+                "type": "compute",
+                "runtime": 114.388,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000002"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "18368b5f-d920-4b80-b9d4-9bc04623261e.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "1fb5529c-b2d5-4710-893c-eca0c2fbb4c5.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "74fcb890-d13f-4892-950f-28dcdf5ad5a4.fastq",
+                        "size": 1038716396
+                    }
+                ],
+                "cores": 1,
+                "id": "00000003",
+                "category": "bowtie2"
+            },
+            {
+                "name": "fasterq-dump_00000004",
+                "type": "compute",
+                "runtime": 3169.75,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000005"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "2e5bfe4a-3351-473a-8f01-11b543ffcea2.fastq",
+                        "size": 217507585
+                    }
+                ],
+                "cores": 1,
+                "id": "00000004",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000005",
+                "type": "compute",
+                "runtime": 110.683,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000004"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "65768bc2-c071-45c4-9bcc-896e04a44a72.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "bd0e93c7-fd48-44f8-ae82-1d7bcc2793c1.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "2e5bfe4a-3351-473a-8f01-11b543ffcea2.fastq",
+                        "size": 217507585
+                    }
+                ],
+                "cores": 1,
+                "id": "00000005",
+                "category": "bowtie2"
+            },
+            {
+                "name": "fasterq-dump_00000006",
+                "type": "compute",
+                "runtime": 1941.39,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000007"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "15dd0b87-3698-493e-bcc1-10cbca53696d.fastq",
+                        "size": 461757178
+                    }
+                ],
+                "cores": 1,
+                "id": "00000006",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000007",
+                "type": "compute",
+                "runtime": 80.996,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000006"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "7e74e82f-1ef6-4f1a-a82f-146e43fa51e7.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "259e676a-1dad-4c48-a0fa-0b065f3313cb.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "15dd0b87-3698-493e-bcc1-10cbca53696d.fastq",
+                        "size": 461757178
+                    }
+                ],
+                "cores": 1,
+                "id": "00000007",
+                "category": "bowtie2"
+            },
+            {
+                "name": "fasterq-dump_00000008",
+                "type": "compute",
+                "runtime": 1065.521,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000009"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "82d5cdee-deca-4609-9015-973eff76fc9f.fastq",
+                        "size": 911030028
+                    }
+                ],
+                "cores": 1,
+                "id": "00000008",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000009",
+                "type": "compute",
+                "runtime": 12.102,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000008"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "e12e3bac-d335-48d4-ba43-c7d4c83f0ac6.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "c4a7c474-82a5-4e87-a5fb-4c835e991871.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "82d5cdee-deca-4609-9015-973eff76fc9f.fastq",
+                        "size": 911030028
+                    }
+                ],
+                "cores": 1,
+                "id": "00000009",
+                "category": "bowtie2"
+            },
+            {
+                "name": "fasterq-dump_00000010",
+                "type": "compute",
+                "runtime": 1745.901,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000011"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "f876419b-c3aa-43eb-9d8b-40f685f760c7.fastq",
+                        "size": 1674459620
+                    }
+                ],
+                "cores": 1,
+                "id": "00000010",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000011",
+                "type": "compute",
+                "runtime": 84.223,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000010"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "ff32b851-afc9-4568-8759-f7ca550d84c4.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "c8d95714-1437-45c8-ae17-e862181f18d4.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "f876419b-c3aa-43eb-9d8b-40f685f760c7.fastq",
+                        "size": 1674459620
+                    }
+                ],
+                "cores": 1,
+                "id": "00000011",
+                "category": "bowtie2"
+            },
+            {
+                "name": "fasterq-dump_00000012",
+                "type": "compute",
+                "runtime": 2016.77,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000013"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "210762ab-3b8e-4fd5-9625-27cfa29fe2e0.fastq",
+                        "size": 725056655
+                    }
+                ],
+                "cores": 1,
+                "id": "00000012",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000013",
+                "type": "compute",
+                "runtime": 12.102,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000012"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "a87f0dac-5de2-4dea-90ac-c6bd8c28ffda.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "e603120f-8b7e-4d0a-89bd-7735f504deea.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "210762ab-3b8e-4fd5-9625-27cfa29fe2e0.fastq",
+                        "size": 725056655
+                    }
+                ],
+                "cores": 1,
+                "id": "00000013",
+                "category": "bowtie2"
+            },
+            {
+                "name": "fasterq-dump_00000014",
+                "type": "compute",
+                "runtime": 1010.534,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000015"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "4ae9dee7-68cf-4c31-be2e-42bc1aeb29f8.fastq",
+                        "size": 1235892709
+                    }
+                ],
+                "cores": 1,
+                "id": "00000014",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000015",
+                "type": "compute",
+                "runtime": 12.102,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000014"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "9dfe3adb-234d-42fe-b848-c044d62fbb86.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "8498997d-bb8c-48c1-8bfe-8532e7c52b65.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "4ae9dee7-68cf-4c31-be2e-42bc1aeb29f8.fastq",
+                        "size": 1235892709
+                    }
+                ],
+                "cores": 1,
+                "id": "00000015",
+                "category": "bowtie2"
+            },
+            {
+                "name": "fasterq-dump_00000016",
+                "type": "compute",
+                "runtime": 2154.398,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000017"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "acf083db-b0c0-46f9-a4d9-22fdd0135f99.fastq",
+                        "size": 796563477
+                    }
+                ],
+                "cores": 1,
+                "id": "00000016",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000017",
+                "type": "compute",
+                "runtime": 30.07,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000016"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "f54ac620-4486-4870-97ee-9d9070f4c0e5.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "e260a214-8f79-4468-95e2-93adca92fd77.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "acf083db-b0c0-46f9-a4d9-22fdd0135f99.fastq",
+                        "size": 796563477
+                    }
+                ],
+                "cores": 1,
+                "id": "00000017",
+                "category": "bowtie2"
+            },
+            {
+                "name": "fasterq-dump_00000018",
+                "type": "compute",
+                "runtime": 434.37,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000019"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "71ce857a-05ea-42cd-a825-5e89eb336eaa.fastq",
+                        "size": 1245224464
+                    }
+                ],
+                "cores": 1,
+                "id": "00000018",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000019",
+                "type": "compute",
+                "runtime": 120.78,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000018"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "fbdb8f6d-0cbf-4515-b100-15ed6adf069a.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "b6f520a5-6a87-4251-b612-175e881a55de.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "71ce857a-05ea-42cd-a825-5e89eb336eaa.fastq",
+                        "size": 1245224464
+                    }
+                ],
+                "cores": 1,
+                "id": "00000019",
+                "category": "bowtie2"
+            },
+            {
+                "name": "fasterq-dump_00000020",
+                "type": "compute",
+                "runtime": 434.37,
+                "command": {
+                    "program": "fasterq-dump"
+                },
+                "parents": [],
+                "children": [
+                    "bowtie2_00000021"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "afa7af97-c1c1-4852-a393-53020461219b.fastq",
+                        "size": 801209162
+                    }
+                ],
+                "cores": 1,
+                "id": "00000020",
+                "category": "fasterq-dump"
+            },
+            {
+                "name": "bowtie2_00000021",
+                "type": "compute",
+                "runtime": 12.102,
+                "command": {
+                    "program": "bowtie2"
+                },
+                "parents": [
+                    "bowtie2-build_00000001",
+                    "fasterq-dump_00000020"
+                ],
+                "children": [
+                    "merge_00000022"
+                ],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "d62915e4-dac2-4d77-a665-e918cca692ef.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "output",
+                        "name": "6fed87c9-734d-4911-ba46-8097f62bc0c2.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74210a-3cfe-4695-bd68-0a5ea9bcf4e9.bt2",
+                        "size": 422685
+                    },
+                    {
+                        "link": "input",
+                        "name": "afa7af97-c1c1-4852-a393-53020461219b.fastq",
+                        "size": 801209162
+                    }
+                ],
+                "cores": 1,
+                "id": "00000021",
+                "category": "bowtie2"
+            },
+            {
+                "name": "merge_00000022",
+                "type": "compute",
+                "runtime": 0.03,
+                "command": {
+                    "program": "merge"
+                },
+                "parents": [
+                    "bowtie2_00000003",
+                    "bowtie2_00000005",
+                    "bowtie2_00000007",
+                    "bowtie2_00000009",
+                    "bowtie2_00000011",
+                    "bowtie2_00000013",
+                    "bowtie2_00000015",
+                    "bowtie2_00000017",
+                    "bowtie2_00000019",
+                    "bowtie2_00000021"
+                ],
+                "children": [],
+                "files": [
+                    {
+                        "link": "output",
+                        "name": "c1262c9a-23b6-4b05-b4ac-e8d41a4da3a6.gz",
+                        "size": 1075
+                    },
+                    {
+                        "link": "input",
+                        "name": "18368b5f-d920-4b80-b9d4-9bc04623261e.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "1fb5529c-b2d5-4710-893c-eca0c2fbb4c5.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "65768bc2-c071-45c4-9bcc-896e04a44a72.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "bd0e93c7-fd48-44f8-ae82-1d7bcc2793c1.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "7e74e82f-1ef6-4f1a-a82f-146e43fa51e7.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "259e676a-1dad-4c48-a0fa-0b065f3313cb.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "e12e3bac-d335-48d4-ba43-c7d4c83f0ac6.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "c4a7c474-82a5-4e87-a5fb-4c835e991871.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "ff32b851-afc9-4568-8759-f7ca550d84c4.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "c8d95714-1437-45c8-ae17-e862181f18d4.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "a87f0dac-5de2-4dea-90ac-c6bd8c28ffda.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "e603120f-8b7e-4d0a-89bd-7735f504deea.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "9dfe3adb-234d-42fe-b848-c044d62fbb86.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "8498997d-bb8c-48c1-8bfe-8532e7c52b65.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "f54ac620-4486-4870-97ee-9d9070f4c0e5.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "e260a214-8f79-4468-95e2-93adca92fd77.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "fbdb8f6d-0cbf-4515-b100-15ed6adf069a.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "b6f520a5-6a87-4251-b612-175e881a55de.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "d62915e4-dac2-4d77-a665-e918cca692ef.bai",
+                        "size": 24
+                    },
+                    {
+                        "link": "input",
+                        "name": "6fed87c9-734d-4911-ba46-8097f62bc0c2.bam",
+                        "size": 317
+                    },
+                    {
+                        "link": "input",
+                        "name": "c15c62bd-20e6-41f2-a768-b0ddb5487090.gz",
+                        "size": 4131
+                    }
+                ],
+                "cores": 1,
+                "id": "00000022",
+                "category": "merge"
+            }
+        ],
+        "machines": [
+            {
+                "nodeName": "pegasus-2",
+                "system": "linux",
+                "architecture": "x86_64",
+                "memory": 131795984,
+                "release": "4.15.0-88-generic",
+                "cpu": {
+                    "count": 48,
+                    "vendor": "GenuineIntel",
+                    "speed": 2253
+                }
+            },
+            {
+                "nodeName": "pegasus-5",
+                "system": "linux",
+                "architecture": "x86_64",
+                "memory": 131795984,
+                "release": "4.15.0-88-generic",
+                "cpu": {
+                    "count": 48,
+                    "vendor": "GenuineIntel",
+                    "speed": 1834
+                }
+            },
+            {
+                "nodeName": "pegasus-4",
+                "system": "linux",
+                "architecture": "x86_64",
+                "memory": 131795984,
+                "release": "4.15.0-88-generic",
+                "cpu": {
+                    "count": 48,
+                    "vendor": "GenuineIntel",
+                    "speed": 1494
+                }
+            },
+            {
+                "nodeName": "pegasus-3",
+                "system": "linux",
+                "architecture": "x86_64",
+                "memory": 131795984,
+                "release": "4.15.0-88-generic",
+                "cpu": {
+                    "count": 48,
+                    "vendor": "GenuineIntel",
+                    "speed": 1242
+                }
+            }
+        ]
+    }
+}
