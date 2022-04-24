@@ -1,7 +1,6 @@
 import pandas as pd
 import json 
 import networkx as nx
-from wfcommons.wfchef.utils import create_graph
 
 class Machine(object):
   def __init__(self, machine):
@@ -50,7 +49,7 @@ class Job(object):
 
 
   def __repr__(self):
-    return str(f"['{self.name}']: on machine '{self.machine.name}' parent: '{[p.name for p in self.parents]}' children: '{[c.name for c in self.children]}'" )
+    return str(f"['{self.name}']: on machine '{self.machine.get('name')}' parent: '{[p.name for p in self.parents]}' children: '{[c.name for c in self.children]}'" )
 
   # def __str__(self):
   #   return str(vars(self))
@@ -85,28 +84,63 @@ class JobBuilder(object):
   def __str__(self):
     return str(vars(self))
 
-  def set_machine(self, machine : Machine):
+  def set_machine(self, machine):
     self.machine = machine
 
   def build(self) -> Job:
     return Job(id = self.id, name = self.name, children = self.children_names, parents = self.parent_names, machine = self.machine, inputs = self.inputs, outputs = self.outputs, runtime = self.runtime, used_memeory = self.used_memeory, normalized_runtime = self.normalized_runtime)
 
 
-def get_problem_data(path):
-  with open(path) as f:
-    json_data = json.loads(f.read())
-  graph = create_graph(path)
+def create_graph(content) -> nx.DiGraph:
+  graph = nx.DiGraph()
+
+  # Add src/dst nodes
+  graph.add_node("SRC", label="SRC", type="SRC", id="SRC")
+  graph.add_node("DST", label="DST", type="DST", id="DST")
+
+  id_count = 0
+
+  for job in content['workflow']['jobs']:
+    # specific for epigenomics -- have to think about how to do it in general
+    if "genome-dax" in content['name']:
+      _type, *_ = job['name'].split('_')
+      graph.add_node(job['name'], label=_type, type=_type, id=str(id_count))
+      id_count += 1
+    else:
+      try:
+        _type, _id = job['name'].split('_ID')
+      except ValueError:
+        _type, _id = job['name'].split('_0')
+      graph.add_node(job['name'], label=_type, type=_type, id=_id)
+
+    # for job in content['workflow']['jobs']:
+    for parent in job['parents']:
+      graph.add_edge(parent, job['name'])
+
+  for node in graph.nodes:
+
+    if node in ["SRC", "DST"]:
+      continue
+    if graph.in_degree(node) <= 0:
+      graph.add_edge("SRC", node)
+    if graph.out_degree(node) <= 0:
+      graph.add_edge(node, "DST")
+
+  return graph
+
+def get_problem_data(workflow_data, machines = None):
+  graph = create_graph(workflow_data)
 
   paths = list(nx.all_simple_paths(graph, source='SRC', target='DST'))
 
-  machines =  [Machine(machine) for machine in json_data['workflow']['machines']]
-  machines = { machine.name : machine for machine in machines}
+  wf_machines =  [Machine(machine) for machine in workflow_data['workflow']['machines']]
+  wf_machines = { machine['nodeName'] : machine for machine in workflow_data['workflow']['machines']}
 
-  jobs_b = [ (JobBuilder(job), job['machine']) for job in json_data['workflow']['jobs']]
+  jobs_b = [ (JobBuilder(job), job['machine']) for job in workflow_data['workflow']['jobs']]
 
   for job, machine_name in jobs_b:
-      job.set_machine(machines[machine_name])
-      job.normalized_runtime = job.runtime / job.machine.cpu['speed'] * job.machine.cpu['count']
+      job.set_machine(wf_machines[machine_name])
+      job.normalized_runtime = job.runtime / job.machine['cpu']['speed'] * job.machine['cpu']['count']
 
   min_runtime = min(map(lambda x: x[0].normalized_runtime, jobs_b))
 
@@ -120,61 +154,31 @@ def get_problem_data(path):
     j.find_and_set_parents(jobs)
     j.find_and_set_children(jobs)
 
+  if machines is None: 
+    machines = wf_machines
 
-  base_cpu_hour_price = 0.08
-  base_gpu_hour_price = 5.0
-  gpu_speed_vs_cpu = 100
-
-  cpus = {'Zeus': 0.25, 'Prometeus': 1 , 'Ares': 1.6}
-  cpus_base_memory = {'Zeus': 2, 'Prometeus': 4 , 'Ares': 8}
-  cpus_more_memory_factor = {'Zeus': 0.2, 'Prometeus': 0.40 , 'Ares': 0.80}
-
-
-  gpus = {'Prometeus': 1 , 'Ares': 1.6}
-  gpus_base_memory = {'Prometeus': 4 , 'Ares': 8}
-  gpus_more_memory_factor = {'Prometeus': 0.40 , 'Ares': 0.80}
-
-
-  cyfronet_machines = {}
-  for cpu in cpus.keys():
-    cyfronet_machines[f"{cpu}Cpu"] = {
-        'base_price' :  base_cpu_hour_price,
-        'base_memory' : cpus_base_memory[cpu],
-        'memory_cost_multiplayer' : cpus_more_memory_factor[cpu],
-        'speed': cpus[cpu]
-    }
-  for gpu in gpus.keys():
-    cyfronet_machines[f"{gpu}Gpu"] = {
-        'base_price' : base_gpu_hour_price,
-        'base_memory' : gpus_base_memory[gpu],
-        'memory_cost_multiplayer' : gpus_more_memory_factor[gpu],
-        'speed' : gpus[gpu] * gpu_speed_vs_cpu
-    }
-
-  def calc_cost(machine , job):
+  def calc_cost(machine , job, runtime):
     if job.used_memeory is not None:
-      mib_free = 1024 * machine['base_memory']
-      cost_power = (job.used_memeory - mib_free) // 1024
+      kib_free = machine['memory'] 
+      cost_power = (job.used_memeory - kib_free) // (1024 * 1024)
     else:
       cost_power = 0
-    runtime = job.normalized_runtime
-    return runtime * machine['base_price'] * (1 + machine['memory_cost_multiplayer']* cost_power) / machine['speed']
+    return runtime * machine.get('price', 1) * (1 + machine.get('memory_cost_multiplayer', 0)* cost_power)
 
   costs = {}
   runtimes = {}
-  for machine in cyfronet_machines:
+  for machine in machines:
     machine_cost = []
     machine_runtime = []
     for j in jobs:
-      machine_cost.append(calc_cost(cyfronet_machines[machine], j))
-      machine_runtime.append( j.normalized_runtime / cyfronet_machines[machine]['speed'])
+      m = machines[machine]
+      runtime = j.normalized_runtime / (m['cpu']['speed'] * m['cpu']['count'])
+      machine_cost.append(calc_cost(m, j, runtime))
+      machine_runtime.append(runtime)
     costs[machine] = machine_cost
     runtimes[f"{machine}Runtime"] = machine_runtime
 
   cost_df = pd.DataFrame(data=costs, index = [j.name for j in jobs])
   runtime_df = pd.DataFrame(data=runtimes, index = [j.name for j in jobs])
-
-
-  
 
   return cost_df, runtime_df, jobs, paths
