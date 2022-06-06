@@ -1,6 +1,8 @@
 import pandas as pd
 import json 
 import networkx as nx
+import math
+from collections import defaultdict
 
 class Machine(object):
   def __init__(self, machine):
@@ -163,7 +165,7 @@ def get_problem_data(workflow_data, machines = None):
       cost_power = (job.used_memeory - kib_free) // (1024 * 1024)
     else:
       cost_power = 0
-    return runtime * machine.get('price', 1) * (1 + machine.get('memory_cost_multiplayer', 0)* cost_power)
+    return runtime * machine.get('price', 1) * (1 + machine.get('memory_cost_multiplayer', 0)** cost_power)
 
   costs = {}
   runtimes = {}
@@ -182,3 +184,23 @@ def get_problem_data(workflow_data, machines = None):
   runtime_df = pd.DataFrame(data=runtimes, index = [j.name for j in jobs])
 
   return cost_df, runtime_df, jobs, paths
+
+def get_deadlines(paths, jobs, runtimes):
+  flat_runtimes = [(runtime, name) for n, machine_runtimes in runtimes.items() for runtime, name in zip(machine_runtimes, [j.name for j in jobs])]
+
+  max_path_runtime = 0.0
+  min_path_runtime = 0.0
+
+  for path in paths:
+    max_runtime = defaultdict(lambda: 0.0)
+    min_runtime = defaultdict(lambda: math.inf)
+
+    for runtime, name in flat_runtimes:
+        if name not in path:
+            continue
+        max_runtime[name] = max( max_runtime[name], runtime)
+        min_runtime[name] = min( min_runtime[name], runtime)
+    # print(path_runtime <= deadline)
+    max_path_runtime = max(max_path_runtime, sum(max_runtime.values()))
+    min_path_runtime = max(min_path_runtime, sum(min_runtime.values()))
+  return min_path_runtime, max_path_runtime

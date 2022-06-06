@@ -1,12 +1,33 @@
+from pprint import pprint
+import sys, getopt
+from prepare_problem import get_problem_data
+import json
 from dimod import cqm_to_bqm, Binary, Integer, ConstrainedQuadraticModel
 from dwave.system import LeapHybridBQMSampler, LeapHybridCQMSampler
 
 import numpy as np
 from parse import parse
-from pprint import pprint
 import time
 
-def cqm_solution(cost_df, jobs, runtimes, paths, deadline, debug = False):
+import pickle
+import os
+
+from os import walk
+
+def generate_histogram(inputfile, machinefile, deadline, output_name):
+
+    with open(inputfile) as f:
+        input = json.loads(f.read())
+
+    machines = None
+    if machinefile is not None:
+        with open(machinefile) as f:
+            machines = json.loads(f.read())
+
+    # def cqm_solution(cost_df, jobs, runtimes, paths, deadline, debug = False):
+    cost_df, runtimes, jobs, paths = get_problem_data(input, machines)
+
+
     cqm = ConstrainedQuadraticModel()
     xs = []
     job_count = len(jobs)
@@ -47,12 +68,13 @@ def cqm_solution(cost_df, jobs, runtimes, paths, deadline, debug = False):
                 path_runtime = path_runtime + runtime * var
             else:path_runtime = runtime * var
         cqm.add_constraint(path_runtime <= deadline)
-    
+
     sampler_cqm = LeapHybridCQMSampler()
 
     start = time.time()
     solution = sampler_cqm.sample_cqm(cqm,time_limit=5)
     end = time.time()
+
 
     # if debug:
     #     pprint(solution.info)
@@ -75,4 +97,50 @@ def cqm_solution(cost_df, jobs, runtimes, paths, deadline, debug = False):
         machine, var = parse('m{}_x{}', k)
         if is_used:
             actual_solution[jobs[int(var)].name] = machine_names[int(machine)]
-    return actual_solution
+
+    # for s in solution:
+    # print(solution.data_vectors.keys())
+    print(solution.data_vectors["energy"])
+    print(actual_solution)
+    # print(solution.data_vectors["num_occurrences"])
+    # print(solution.data_vectors["is_feasible"])
+    # print(solution.data_vectors["is_satisfied"])
+    # print(solution.info.keys())
+    # print(solution.info['qpu_access_time'])
+
+    solved_cqm = {
+        "input" : inputfile,
+        "machines" : machines,
+        "deadline" : deadline,
+        "solution" : {
+            "info" : solution.info,
+            "data_vectors" : solution.data_vectors,
+            "solutions" : [s for s in solution],
+        },
+        "machine_names" : machine_names,
+        "job_names" : job_names
+    }
+
+    with open(output_name, 'wb') as out_file:
+        pickle.dump(solved_cqm, out_file)
+
+
+# deadlines = [20, 130, 260, 300]
+deadlines = [10000]
+
+# ['Jobs_492.json'] #
+workflows = next(walk("workflows"), (None, None, []))[2]  # [] if no file
+machines = ['basic_test.json', 'cyfronet.json'] #next(walk("machines"), (None, None, []))[2]  # [] if no file
+
+print(machines)
+print(workflows)
+for deadline in deadlines:
+    for workflow in workflows:
+        for machine in machines:
+            output_name = f"pickled_cqm_results/{os.path.splitext(workflow)[0]}_{os.path.splitext(machine)[0]}_{deadline}.pkl"
+            if not os.path.exists(output_name):
+                print(f"RUNNING: {output_name}")
+                generate_histogram(f"workflows/{workflow}", f"machines/{machine}", deadline, output_name)
+            else:
+                print(f"CACHED: {output_name}")
+

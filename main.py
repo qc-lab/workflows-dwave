@@ -2,10 +2,11 @@
 
 from pprint import pprint
 import sys, getopt
-from prepare_problem import get_problem_data
+from prepare_problem import get_problem_data, get_deadlines
 import json 
 from gurobi_solver import gp_solution 
 from cqm_solution import cqm_solution
+import time
 
 def main(argv):
     inputfile = ''
@@ -45,8 +46,14 @@ def main(argv):
 
     cost, runtimes, jobs, paths = get_problem_data(input, machines)
 
+    # print(get_deadlines(paths, jobs, runtimes))
+    # return
+    pprint(cost)
+    start = time.time()
     solution = solver(cost, jobs, runtimes, paths, deadline)
-
+    end = time.time()
+    print(f"{end -start} seconds")
+    print(solution)
     output = input.copy()
     final_jobs = []
     for job in input["workflow"]["jobs"]:

@@ -13,6 +13,7 @@ def gp_solution(cost_df, jobs, runtimes, paths, deadline):
     for machines in range(len(cost_df.columns)):
         for i in range(job_count):
             xs.append(gpm.addVar(vtype=GRB.BINARY, name=f'm{machines}_x{i}'))
+    print(len(xs))
 
     # Problem definition
     model = None
@@ -47,7 +48,7 @@ def gp_solution(cost_df, jobs, runtimes, paths, deadline):
                 path_runtime = path_runtime + runtime * var
             else:
                 path_runtime = runtime * var
-        print(path_runtime <= deadline)
+        # print(path_runtime <= deadline)
         gpm.addConstr(path_runtime <= deadline, f"path_deadline_{i}")
     
     # Optimize model
