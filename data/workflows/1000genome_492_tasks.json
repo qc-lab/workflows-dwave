@@ -65,7 +65,7 @@
             }
         ],
         "executedAt": "20200402T152146+0000",
-        "jobs": [
+        "tasks": [
             {
                 "name": "individuals_ID0000001",
                 "type": "compute",
