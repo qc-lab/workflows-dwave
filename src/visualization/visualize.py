@@ -6,10 +6,8 @@ import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 from wfcommons.wfchef.utils import create_graph
 
-import prepare_problem
 
-
-def create_energy_histogram(output_name): #todo
+def create_energy_histogram(output_name):  # todo
     with open(output_name, 'rb') as solution_file:
         solved_cqm = pickle.load(solution_file)
 
@@ -62,6 +60,7 @@ def draw_workflow_schema(output_file):  # todo create_workflow_schema
     for node in DAG.nodes:
         if node in {'SRC', 'DST'}:
             colors.append("lightgray")
+            # colors.append(plt.cm.tab10[0])
         elif "AresCpu" in new_labels[node]:
             colors.append("lightblue")
         elif "AresGpu" in new_labels[node]:

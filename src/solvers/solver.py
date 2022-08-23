@@ -2,11 +2,7 @@ import copy
 import pickle
 from abc import ABC, abstractmethod
 
-import gurobipy as gp
 import numpy as np
-from dimod import Binary, ConstrainedQuadraticModel
-from dwave.system import LeapHybridCQMSampler
-from parse import parse
 
 import utils
 from prepare_problem import (calc_dataframes, create_tasks,
@@ -14,19 +10,10 @@ from prepare_problem import (calc_dataframes, create_tasks,
                              get_machines_from_wfcommons_file)
 
 
-def solver(wfcommons_file, machine_file, output_file, deadline, method):
-    solvers = {
-        "CQM_solver": CqmSolver,
-        "Gurobi_solver": GurobiSolver,
-    }
-    return solvers[method](wfcommons_file, machine_file, output_file, deadline, method)
-
-
 class Solver(ABC):
-    def __init__(self, wfcommons_file, machine_file, output_file, deadline, method):
+    def __init__(self, wfcommons_file, machine_file, output_file, deadline):
         self.wfcommons_file = wfcommons_file
         self.deadline = deadline
-        self.method = method
         self.machine_file = machine_file
         self.output_file = output_file
         self.wfcommons_data = self.set_wfcommons_data()
@@ -113,106 +100,6 @@ class Solver(ABC):
         output["workflow"]["machines"] = self.machines
 
         utils.write_json_file(output, self.output_file)
-
-
-class GurobiSolver(Solver):
-    @utils.calculate_time
-    def solve(self):
-        solution = self.new_gurobi_solution()
-        self.save_result(solution)
-
-    def new_gurobi_solution(self):
-        gpm = gp.Model("workflow")
-        binary_variables = []
-        tasks_amount = len(self.tasks)
-
-        for machines in range(len(self.cost_df.columns)):
-            for i in range(tasks_amount):
-                binary_variables.append(gpm.addVar(vtype=gp.GRB.BINARY, name=f'm{machines}_x{i}'))
-
-        cost_function, constraint_one_machine, constraint_path_runtime = self.prepare_cost_function(
-            binary_variables)
-
-        gpm.setObjective(cost_function, gp.GRB.MINIMIZE)
-
-        for i in range(tasks_amount):
-            gpm.addConstr(constraint_one_machine[i] == 1, f"one_machine_{i}")
-
-        for i in range(len(self.paths)):
-            gpm.addConstr(constraint_path_runtime[i] <= self.deadline, f"path_deadline_{i}")
-
-        gpm.optimize()
-
-        machine_names = self.cost_df.columns
-
-        actual_solution = {}
-        for v in gpm.getVars():
-            machine, var = parse('m{}_x{}', v.VarName)
-            if v.X == 1.0:
-                actual_solution[self.tasks[int(var)].name] = machine_names[int(machine)]
-        return actual_solution
-
-
-class CqmSolver(Solver):
-    @utils.calculate_time
-    def solve(self):
-        solution = self.new_cqm_solution()
-        self.save_result(solution)
-
-    def new_cqm_solution(self):
-        cqm = ConstrainedQuadraticModel()
-        tasks_amount = len(self.tasks)
-        machines_amount = len(self.cost_df.columns)
-
-        binary_variables = []
-        for machines in range(machines_amount):
-            x = [Binary(f'm{machines}_x{i}') for i in range(tasks_amount)]
-            binary_variables.extend(x)
-
-        cost_function, constraint_one_machine, constraint_path_runtime = self.prepare_cost_function(binary_variables)
-
-        cqm.set_objective(cost_function)
-
-        for i in range(tasks_amount):
-            cqm.add_constraint(constraint_one_machine[i] == 1)
-
-        for i in range(len(self.paths)):
-            cqm.add_constraint(constraint_path_runtime[i] <= self.deadline)
-
-        sampler_cqm = LeapHybridCQMSampler()
-
-        solution = sampler_cqm.sample_cqm(cqm, time_limit=5)
-
-        def is_correct_solution(cqm, sol):
-            return len(cqm.violations(sol, skip_satisfied=True)) == 0
-
-        correct_solutions = [s for s in solution if is_correct_solution(cqm, s)]
-
-        best_solution = correct_solutions[0]
-
-        machine_names = self.cost_df.columns
-
-        actual_solution = {}
-
-        for k, is_used in best_solution.items():
-            machine, var = parse('m{}_x{}', k)
-            if is_used:
-                actual_solution[self.tasks[int(var)].name] = machine_names[int(machine)]
-
-        solved_cqm = {
-            "solution": {
-                "info": solution.info,
-                "data_vectors": solution.data_vectors,
-                "solutions": [s for s in solution],
-            },
-        }
-
-        output_name = "data/results/cqm_results.pkl"
-        with open(output_name, 'wb') as out_file:
-            pickle.dump(solved_cqm, out_file)
-
-        return actual_solution
-
 
 # def save_result(wfcommons_data, solution, machines, output_file):
 #     output = copy.deepcopy(wfcommons_data)

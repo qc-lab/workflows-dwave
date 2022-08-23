@@ -9,7 +9,7 @@
           "count": 1
         },
         "price": 0.08,
-        "memory_cost_multiplayer": 0.8
+        "memory_cost_multiplier": 0.8
       },
       {
         "nodeName": "AresGpu",
@@ -19,7 +19,7 @@
           "count": 100
         },
         "price": 5.0,
-        "memory_cost_multiplayer": 0.8
+        "memory_cost_multiplier": 0.8
       },
       {
         "nodeName": "PrometeusCpu",
@@ -29,7 +29,7 @@
           "count": 1
         },
         "price": 0.08,
-        "memory_cost_multiplayer": 0.4
+        "memory_cost_multiplier": 0.4
       },
       {
         "nodeName": "PrometeusGpu",
@@ -39,7 +39,7 @@
           "count": 100
         },
         "price": 5.0,
-        "memory_cost_multiplayer": 0.4
+        "memory_cost_multiplier": 0.4
       },
       {
         "nodeName": "ZeusCpu",
@@ -49,7 +49,7 @@
           "count": 1
         },
         "price": 0.08,
-        "memory_cost_multiplayer": 0.2
+        "memory_cost_multiplier": 0.2
       }
     ]
   }

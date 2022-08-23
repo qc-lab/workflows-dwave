@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import networkx as nx
 import pandas as pd
-from wfcommons.wfchef.utils import create_graph
+import wfcommons.wfchef.utils as wf_commons
 
 import utils
 
@@ -64,12 +64,12 @@ def calc_cost(machine, task, runtime):
         cost_power = (task.memory - kib_free) // (1024 * 1024)
     else:
         cost_power = 0
-    cost = runtime * machine.get('price', 1) * (1 + machine.get('memory_cost_multiplayer', 0) ** cost_power)
+    cost = runtime * machine.get('price', 1) * (1 + machine.get('memory_cost_multiplier', 0) ** cost_power)
     return cost
 
 
 def find_all_paths_in_dag(wfcommons_file):
-    workflow_dag = create_graph(wfcommons_file)
+    workflow_dag = wf_commons.create_graph(wfcommons_file)
     paths = list(nx.all_simple_paths(workflow_dag, source='SRC', target='DST'))
     return paths
 
@@ -78,11 +78,6 @@ def real_runtime_formula(machine_details, task=None):
     real_runtime = task.normalized_runtime / (
             machine_details['cpu']['speed'] * machine_details['cpu']['count'])
     return real_runtime
-
-
-def create_dataframe(data, index):
-    dataframe = pd.DataFrame(data, index)
-    return dataframe
 
 
 def calc_dataframes(machines, tasks):
@@ -100,8 +95,8 @@ def calc_dataframes(machines, tasks):
         runtimes[f"{machine_name}Runtime"] = machine_runtime
 
     index = [j.name for j in tasks]
-    cost_df = create_dataframe(costs, index)
-    runtime_df = create_dataframe(runtimes, index)
+    cost_df = pd.DataFrame(costs, index)
+    runtime_df = pd.DataFrame(runtimes, index)
     return cost_df, runtime_df
 
 
