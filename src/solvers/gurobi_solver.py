@@ -1,18 +1,28 @@
+"""This work was partially funded by the EuroHPC PL project,
+funded in the frame of Smart Growth Operational Programme, topic 4.2.
+
+Authors: Mateusz Hurbol, Justyna Zawalska
+"""
+from typing import Dict
+
 import gurobipy as gp
 from parse import parse
 
-import utils
-
+from ..utils.execution_stats import calculate_time
 from .solver import Solver
 
 
 class GurobiSolver(Solver):
-    @utils.calculate_time
-    def solve(self):
-        solution = self.new_gurobi_solution()
+    """Solver that uses Gurobi Optimizer."""
+
+    def solve(self) -> None:
+        """Finds the solution and saves it."""
+        solution = self.find_solution()
         self.save_result(solution)
 
-    def new_gurobi_solution(self):
+    @calculate_time
+    def find_solution(self) -> Dict[str, str]:
+        """Uses Gurobi Optimizer to find the optimal solution."""
         gpm = gp.Model("workflow")
         binary_variables = []
         tasks_amount = len(self.tasks)
@@ -36,9 +46,9 @@ class GurobiSolver(Solver):
 
         machine_names = self.cost_df.columns
 
-        actual_solution = {}
-        for v in gpm.getVars():
-            machine, var = parse('m{}_x{}', v.VarName)
-            if v.X == 1.0:
-                actual_solution[self.tasks[int(var)].name] = machine_names[int(machine)]
-        return actual_solution
+        solution = {}
+        for variable in gpm.getVars():
+            machine, var = parse('m{}_x{}', variable.VarName)
+            if variable.X == 1.0:
+                solution[self.tasks[int(var)].name] = machine_names[int(machine)]
+        return solution

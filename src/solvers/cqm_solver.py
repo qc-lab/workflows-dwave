@@ -1,29 +1,45 @@
+"""This work was partially funded by the EuroHPC PL project,
+funded in the frame of Smart Growth Operational Programme, topic 4.2.
+
+Authors: Mateusz Hurbol, Justyna Zawalska
+"""
 import pickle
+from typing import Dict
 
 from dimod import Binary, ConstrainedQuadraticModel
 from dwave.system import LeapHybridCQMSampler
 from parse import parse
 
-import utils
-
 from .solver import Solver
+from ..config import cqm_config
+from ..utils.execution_stats import calculate_time
+from ..utils.file_management import write_pickle_file
 
 
 class CqmSolver(Solver):
-    @utils.calculate_time
+    """Solver that uses Constrained Quadratic Model from D-Wave."""
+
     def solve(self):
-        solution = self.new_cqm_solution()
+        """Finds the solution and saves it."""
+
+        solution = self.find_solution()
         self.save_result(solution)
 
-    def new_cqm_solution(self):
+    @calculate_time
+    def find_solution(self) -> Dict[str, str]:
+        """Uses CQM to find the optimal solution.
+
+        The Leap Hybrid CQM Sampler returns a few potential candiadates for optimal solution.
+        To find the optimal solution the results from the sampler have to be validated."""
+
         cqm = ConstrainedQuadraticModel()
         tasks_amount = len(self.tasks)
         machines_amount = len(self.cost_df.columns)
 
         binary_variables = []
         for machines in range(machines_amount):
-            x = [Binary(f'm{machines}_x{i}') for i in range(tasks_amount)]
-            binary_variables.extend(x)
+            var = [Binary(f'm{machines}_x{i}') for i in range(tasks_amount)]
+            binary_variables.extend(var)
 
         cost_function, constraint_one_machine, constraint_path_runtime = self.prepare_cost_function(binary_variables)
 
@@ -37,34 +53,33 @@ class CqmSolver(Solver):
 
         sampler_cqm = LeapHybridCQMSampler()
 
-        solution = sampler_cqm.sample_cqm(cqm, time_limit=5)
+        solutions = sampler_cqm.sample_cqm(cqm, cqm_config.TIME_LIMIT)
+        save_solution_energies(solutions)
 
         def is_correct_solution(cqm, sol):
             return len(cqm.violations(sol, skip_satisfied=True)) == 0
 
-        correct_solutions = [s for s in solution if is_correct_solution(cqm, s)]
-
+        valid_solution = {}
+        correct_solutions = [s for s in solutions if is_correct_solution(cqm, s)]
         best_solution = correct_solutions[0]
-
         machine_names = self.cost_df.columns
-
-        actual_solution = {}
-
         for k, is_used in best_solution.items():
             machine, var = parse('m{}_x{}', k)
             if is_used:
-                actual_solution[self.tasks[int(var)].name] = machine_names[int(machine)]
+                valid_solution[self.tasks[int(var)].name] = machine_names[int(machine)]
 
-        solved_cqm = {
-            "solution": {
-                "info": solution.info,
-                "data_vectors": solution.data_vectors,
-                "solutions": [s for s in solution],
-            },
-        }
+        return valid_solution
 
-        output_name = "data/results/cqm_results.pkl"
-        with open(output_name, 'wb') as out_file:
-            pickle.dump(solved_cqm, out_file)
 
-        return actual_solution
+def save_solution_energies(solutions) -> None:
+    """Saves all the solutions returned from D-Wave and their energies."""
+
+    print("solutions", solutions, type(solutions))
+    solved_cqm = {
+        "solution": {
+            "info": solutions.info,
+            "data_vectors": solutions.data_vectors,
+            "solutions": list(solutions),
+        },
+    }
+    write_pickle_file(solved_cqm, cqm_config.OUTPUT_FILENAME)

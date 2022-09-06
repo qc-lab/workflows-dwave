@@ -1,3 +1,7 @@
+"""This work was partially funded by the EuroHPC PL project,
+funded in the frame of Smart Growth Operational Programme, topic 4.2.
+"""
+
 import json
 import pickle
 
@@ -7,7 +11,7 @@ from networkx.drawing.nx_agraph import graphviz_layout
 from wfcommons.wfchef.utils import create_graph
 
 
-def create_energy_histogram(output_name):  # todo
+def create_energy_histogram(output_name):
     with open(output_name, 'rb') as solution_file:
         solved_cqm = pickle.load(solution_file)
 
@@ -59,17 +63,16 @@ def draw_workflow_schema(output_file):  # todo create_workflow_schema
     colors = []
     for node in DAG.nodes:
         if node in {'SRC', 'DST'}:
-            colors.append("lightgray")
-            # colors.append(plt.cm.tab10[0])
+            colors.append(plt.cm.tab10.colors[0])
         elif "AresCpu" in new_labels[node]:
-            colors.append("lightblue")
+            colors.append(plt.cm.tab10.colors[1])
         elif "AresGpu" in new_labels[node]:
-            colors.append("mistyrose")
+            colors.append(plt.cm.tab10.colors[2])
         elif "PrometeusCpu" in new_labels[node]:
-            colors.append("papayawhip")
+            colors.append(plt.cm.tab10.colors[3])
         elif "PrometeusGpu" in new_labels[node]:
-            colors.append("yellowgreen")
+            colors.append(plt.cm.tab10.colors[4])
         elif "ZeusCpu" in new_labels[node]:
-            colors.append("lightyellow")
+            colors.append(plt.cm.tab10.colors[5])
 
     display_graph(DAG, new_labels, colors)
