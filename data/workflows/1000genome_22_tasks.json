@@ -29,7 +29,7 @@
                 }
             }
         ],
-        "jobs": [
+        "tasks": [
             {
                 "name": "bowtie2-build_ID0000001",
                 "type": "compute",
