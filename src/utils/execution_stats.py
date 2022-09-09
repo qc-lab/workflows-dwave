@@ -6,6 +6,8 @@ import time
 
 
 def calculate_time(func):
+    """Returns the execution time."""
+
     def wrapper(*args, **kwargs):
         start = time.time()
         output = func(*args, **kwargs)

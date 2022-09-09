@@ -16,11 +16,9 @@ def create_energy_histogram(output_name):
         solved_cqm = pickle.load(solution_file)
 
     correct_solutions = [e for i, e in enumerate(solved_cqm["solution"]["data_vectors"]["energy"])
-                         if
-                         solved_cqm["solution"]["data_vectors"]["is_feasible"][i]]
+                         if solved_cqm["solution"]["data_vectors"]["is_feasible"][i]]
     incorrect_solutions = [e for i, e in enumerate(solved_cqm["solution"]["data_vectors"]["energy"])
-                           if
-                           not solved_cqm["solution"]["data_vectors"]["is_feasible"][i]]
+                           if not solved_cqm["solution"]["data_vectors"]["is_feasible"][i]]
 
     label = ["Correct", "Incorrect"]
 

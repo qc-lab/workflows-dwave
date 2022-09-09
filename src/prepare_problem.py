@@ -8,14 +8,13 @@ import inspect
 import math
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
 
 import networkx as nx
 import pandas as pd
 import wfcommons
 from dataclasses_json import dataclass_json
 
-from src.utils.file_management import read_json_file
+from .utils.file_management import read_json_file
 
 
 @dataclass_json
@@ -40,12 +39,12 @@ class Task:
         })
 
 
-def get_machines_from_wfcommons_file(workflow_filename: str) -> Dict[str, dict]:
+def get_machines_from_wfcommons_file(machines_filename: str) -> dict[str, dict]:
     """Reads a WfCommons file that contains data about machines and
     returns them in the form of a dict where the key is the machine
     name and the values are machine details."""
 
-    machines_data = read_json_file(workflow_filename)
+    machines_data = read_json_file(machines_filename)
     machines = {machine['nodeName']: machine for machine in machines_data['workflow']['machines']}
     return machines
 
@@ -63,7 +62,7 @@ def calc_cost(machine: dict, task: Task, runtime: float) -> float:
     return cost
 
 
-def find_all_paths_in_dag(wfcommons_filename: str) -> List[List[str]]:
+def find_all_paths_in_dag(wfcommons_filename: str) -> list[list[str]]:
     """Uses a function from WfCommons to create a DAG of the workflow
     and then returns the paths from source to all the destinations."""
 
@@ -72,7 +71,7 @@ def find_all_paths_in_dag(wfcommons_filename: str) -> List[List[str]]:
     return paths
 
 
-def calc_dataframes(machines: Dict[str, dict], tasks: List[Task]) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def calc_dataframes(machines: dict[str, dict], tasks: list[Task]) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Creates dataframes of costs and runtimes."""
 
     costs, runtimes = {}, {}
@@ -93,13 +92,12 @@ def calc_dataframes(machines: Dict[str, dict], tasks: List[Task]) -> Tuple[pd.Da
     return cost_df, runtime_df
 
 
-def extract_tasks(wfcommons_data: dict) -> List[Task]:
+def extract_tasks(wfcommons_data: dict) -> list[Task]:
     """Creates a list of tasks  based on the WfCommons data."""
-    tasks = [Task.from_dict(task) for task in wfcommons_data['workflow']['tasks']]
-    return tasks
+    return [Task.from_dict(task) for task in wfcommons_data['workflow']['tasks']]
 
 
-def get_deadlines(paths: List[List[str]], tasks: List[Task], runtimes: pd.DataFrame) -> Tuple[float, float]:
+def get_deadlines(paths: list[list[str]], tasks: list[Task], runtimes: pd.DataFrame) -> tuple[float, float]:
     """Calculates the minimum and maximum path runtime for the whole workflow."""
 
     flat_runtimes = [(runtime, name) for n, machine_runtimes in runtimes.items() for runtime, name
@@ -109,8 +107,8 @@ def get_deadlines(paths: List[List[str]], tasks: List[Task], runtimes: pd.DataFr
     min_path_runtime = 0.0
 
     for path in paths:
-        max_runtime = defaultdict(lambda: 0.0)
-        min_runtime = defaultdict(lambda: math.inf)
+        max_runtime: defaultdict[str, float] = defaultdict(lambda: 0.0)
+        min_runtime: defaultdict[str, float] = defaultdict(lambda: math.inf)
 
         for runtime, name in flat_runtimes:
             if name not in path:

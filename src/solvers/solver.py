@@ -6,14 +6,14 @@ Authors: Mateusz Hurbol, Justyna Zawalska
 
 import copy
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Any
+from typing import Any
 
 import numpy as np
 from pandas import DataFrame
 
-from src.prepare_problem import (calc_dataframes, extract_tasks,
+from src.prepare_problem import (Task, calc_dataframes, extract_tasks,
                                  find_all_paths_in_dag,
-                                 get_machines_from_wfcommons_file, Task)
+                                 get_machines_from_wfcommons_file, get_deadlines)
 from src.utils.file_management import read_json_file, write_json_file
 
 
@@ -27,27 +27,29 @@ class Solver(ABC):
         self.deadline: float = deadline
 
         self.wfcommons_data: dict = read_json_file(wfcommons_filename)
-        self.machines: Dict[str, dict] = set_machines(wfcommons_filename, machines_filename)
-        self.paths: List[List[str]] = find_all_paths_in_dag(wfcommons_filename)
-        self.tasks: List[Task] = extract_tasks(self.wfcommons_data)
+        self.machines: dict[str, dict] = get_machines_from_wfcommons_file(machines_filename)
+        self.paths: list[list[str]] = find_all_paths_in_dag(wfcommons_filename)
+        self.tasks: list[Task] = extract_tasks(self.wfcommons_data)
         self.cost_df, self.runtimes_df = calc_dataframes(self.machines, self.tasks)
+
+        get_deadlines(self.paths, self.tasks, self.runtimes_df)
 
     @abstractmethod
     def solve(self) -> None:
         """Finds the solution with a given method and saves it."""
 
     @abstractmethod
-    def find_solution(self) -> Dict[str, str]:
+    def find_solution(self) -> dict[str, str]:
         """Uses the selected method for finding the solution."""
 
-    def prepare_cost_function(self, binary_variables: list) -> Tuple[Any, List[Any], List[Any]]:
+    def prepare_cost_function(self, binary_variables: list) -> tuple[Any, list[Any], list[Any]]:
         """Uses the QUBO definition of the Workflow Scheduling Problem
         to create the cost function with constraints."""
 
         tasks_amount = len(self.tasks)
 
         # Problem definition
-        cost_function = None
+        cost_function = 0
         for cost, variable in zip(np.array(self.cost_df).flatten(), binary_variables):
             if cost_function:
                 cost_function = cost_function + cost * variable
@@ -57,12 +59,9 @@ class Solver(ABC):
         # Has to use exactly one machine
         constraint_one_machine = []
         for i in range(tasks_amount):
-            one_machine = None
+            one_machine = 0
             for j in range(i, len(binary_variables), tasks_amount):
-                if one_machine:
-                    one_machine = one_machine + binary_variables[j]
-                else:
-                    one_machine = binary_variables[j]
+                one_machine += binary_variables[j]
             constraint_one_machine.append(one_machine)
 
         # All paths have to finish before the dedline
@@ -71,19 +70,16 @@ class Solver(ABC):
 
         constraint_path_runtime = []
         for path in self.paths:
-            path_runtime = None
+            path_runtime = 0
             for var, (runtime, name) in zip(binary_variables, flat_runtimes):
                 if name not in path:
                     continue
-                if path_runtime:
-                    path_runtime = path_runtime + runtime * var
-                else:
-                    path_runtime = runtime * var
+                path_runtime += runtime * var
             constraint_path_runtime.append(path_runtime)
 
         return cost_function, constraint_one_machine, constraint_path_runtime
 
-    def save_result(self, solution: Dict[str, str]) -> None:
+    def save_result(self, solution: dict[str, str]) -> None:
         """Assigns the correct machine names for the tasks."""
         output = copy.deepcopy(self.wfcommons_data)
         final_tasks = []
@@ -95,13 +91,3 @@ class Solver(ABC):
         output['workflow']['machines'] = self.machines
 
         write_json_file(output, self.output_filename)
-
-
-def set_machines(wfcommons_filename: str, machines_filename: str) -> Dict[str, dict]:
-    """Gets the data related to the machines either from the separate file
-    containg machine's details or from the original WfCommons data."""
-    if machines_filename is not None:
-        machines = get_machines_from_wfcommons_file(machines_filename)
-    else:
-        machines = get_machines_from_wfcommons_file(wfcommons_filename)
-    return machines

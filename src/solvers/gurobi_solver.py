@@ -3,7 +3,6 @@ funded in the frame of Smart Growth Operational Programme, topic 4.2.
 
 Authors: Mateusz Hurbol, Justyna Zawalska
 """
-from typing import Dict
 
 import gurobipy as gp
 from parse import parse
@@ -21,14 +20,13 @@ class GurobiSolver(Solver):
         self.save_result(solution)
 
     @calculate_time
-    def find_solution(self) -> Dict[str, str]:
+    def find_solution(self) -> dict[str, str]:
         """Uses Gurobi Optimizer to find the optimal solution."""
         gpm = gp.Model("workflow")
         binary_variables = []
-        tasks_amount = len(self.tasks)
 
         for machines in range(len(self.cost_df.columns)):
-            for i in range(tasks_amount):
+            for i in range(len(self.tasks)):
                 binary_variables.append(gpm.addVar(vtype=gp.GRB.BINARY, name=f'm{machines}_x{i}'))
 
         cost_function, constraint_one_machine, constraint_path_runtime = self.prepare_cost_function(
@@ -36,7 +34,7 @@ class GurobiSolver(Solver):
 
         gpm.setObjective(cost_function, gp.GRB.MINIMIZE)
 
-        for i in range(tasks_amount):
+        for i in range(len(self.tasks)):
             gpm.addConstr(constraint_one_machine[i] == 1, f"one_machine_{i}")
 
         for i in range(len(self.paths)):

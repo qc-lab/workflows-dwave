@@ -4,16 +4,15 @@ funded in the frame of Smart Growth Operational Programme, topic 4.2.
 Authors: Mateusz Hurbol, Justyna Zawalska
 """
 import pickle
-from typing import Dict
 
 from dimod import Binary, ConstrainedQuadraticModel
 from dwave.system import LeapHybridCQMSampler
 from parse import parse
 
-from .solver import Solver
 from ..config import cqm_config
 from ..utils.execution_stats import calculate_time
 from ..utils.file_management import write_pickle_file
+from .solver import Solver
 
 
 class CqmSolver(Solver):
@@ -26,7 +25,7 @@ class CqmSolver(Solver):
         self.save_result(solution)
 
     @calculate_time
-    def find_solution(self) -> Dict[str, str]:
+    def find_solution(self) -> dict[str, str]:
         """Uses CQM to find the optimal solution.
 
         The Leap Hybrid CQM Sampler returns a few potential candiadates for optimal solution.
@@ -56,11 +55,8 @@ class CqmSolver(Solver):
         solutions = sampler_cqm.sample_cqm(cqm, cqm_config.TIME_LIMIT)
         save_solution_energies(solutions)
 
-        def is_correct_solution(cqm, sol):
-            return len(cqm.violations(sol, skip_satisfied=True)) == 0
-
         valid_solution = {}
-        correct_solutions = [s for s in solutions if is_correct_solution(cqm, s)]
+        correct_solutions = [s for s in solutions if len(cqm.violations(s, skip_satisfied=True)) == 0]
         best_solution = correct_solutions[0]
         machine_names = self.cost_df.columns
         for k, is_used in best_solution.items():
@@ -74,7 +70,6 @@ class CqmSolver(Solver):
 def save_solution_energies(solutions) -> None:
     """Saves all the solutions returned from D-Wave and their energies."""
 
-    print("solutions", solutions, type(solutions))
     solved_cqm = {
         "solution": {
             "info": solutions.info,

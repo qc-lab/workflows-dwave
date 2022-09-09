@@ -27,13 +27,13 @@ def read_pickle_file(file_name: str):
 
 
 def write_pickle_file(data, file_name: str) -> None:
-    file = check_file_name(file_name, FILE_EXTENSIONS['pickle_file'])
-    with open(file, 'wb') as file:
+    file_name = check_file_name(file_name, FILE_EXTENSIONS['pickle_file'])
+    print(file_name)
+    with open(file_name, 'wb') as file:
         pickle.dump(data, file)
 
 
 def check_file_name(file_name: str, extension: str) -> str:
-    extension_len = len(extension)
-    if file_name[:-extension_len] != extension or file_name[:-extension_len - 1] != '.':
+    if file_name[-len(extension):] != extension or file_name[-len(extension) - 1] != '.':
         file_name += f'.{extension}'
     return file_name
